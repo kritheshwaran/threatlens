@@ -1,0 +1,112 @@
+threatlens/
+│
+├── .github/
+│   └── workflows/
+│       └── ci.yml
+│
+├── frontend/
+│   ├── public/
+│   └── src/
+│       ├── assets/
+│       ├── components/
+│       │   ├── ui/
+│       │   ├── dashboard/
+│       │   ├── scanner/
+│       │   └── charts/
+│       │
+│       ├── pages/
+│       │   ├── Dashboard.jsx
+│       │   ├── Scanner.jsx
+│       │   ├── History.jsx
+│       │   ├── Analytics.jsx
+│       │   ├── Report.jsx
+│       │   ├── Login.jsx
+│       │   └── Settings.jsx
+│       │
+│       ├── services/
+│       │   └── api.js
+│       │
+│       ├── hooks/
+│       ├── context/
+│       ├── utils/
+│       ├── App.jsx
+│       ├── main.jsx
+│       └── index.css
+│
+├── backend/
+│   ├── app/
+│   │   ├── api/
+│   │   │   ├── routes/
+│   │   │   │   ├── scan.py
+│   │   │   │   ├── auth.py
+│   │   │   │   ├── history.py
+│   │   │   │   └── analytics.py
+│   │   │   └── router.py
+│   │   │
+│   │   ├── core/
+│   │   │   ├── config.py
+│   │   │   └── security.py
+│   │   │
+│   │   ├── models/
+│   │   │   ├── scan.py
+│   │   │   └── user.py
+│   │   │
+│   │   ├── schemas/
+│   │   │   ├── scan.py
+│   │   │   └── user.py
+│   │   │
+│   │   ├── services/
+│   │   │   ├── url_analyzer.py
+│   │   │   ├── domain_analyzer.py
+│   │   │   ├── dns_analyzer.py
+│   │   │   ├── ssl_analyzer.py
+│   │   │   ├── reputation.py
+│   │   │   ├── feature_extractor.py
+│   │   │   ├── risk_engine.py
+│   │   │   └── explanation.py
+│   │   │
+│   │   ├── ml/
+│   │   │   ├── model.py
+│   │   │   ├── predictor.py
+│   │   │   └── preprocessing.py
+│   │   │
+│   │   ├── database/
+│   │   │   ├── database.py
+│   │   │   └── migrations/
+│   │   │
+│   │   └── main.py
+│   │
+│   ├── tests/
+│   │   ├── test_url_analyzer.py
+│   │   ├── test_risk_engine.py
+│   │   └── test_api.py
+│   │
+│   └── requirements.txt
+│
+├── ml/
+│   ├── data/
+│   │   ├── raw/
+│   │   └── processed/
+│   │
+│   ├── notebooks/
+│   │   └── model_training.ipynb
+│   │
+│   ├── scripts/
+│   │   ├── preprocess.py
+│   │   ├── train.py
+│   │   └── evaluate.py
+│   │
+│   └── models/
+│       └── .gitkeep
+│
+├── docs/
+│   ├── architecture.md
+│   ├── api.md
+│   └── screenshots/
+│
+├── .env.example
+├── .gitignore
+├── docker-compose.yml
+├── Dockerfile
+├── README.md
+└── LICENSE
