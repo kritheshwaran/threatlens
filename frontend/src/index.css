@@ -1,0 +1,10 @@
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background-color: #f7f8fb;
+  color: #1f2937;
+}
+
+.app-shell {
+  padding: 2rem;
+}

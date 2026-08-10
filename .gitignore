@@ -1,0 +1,27 @@
+# Node
+node_modules/
+dist/
+build/
+.vite/
+
+# Python
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+*.sqlite3
+venv/
+ENV/
+env/
+
+# Environment files
+.env
+.env.*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDEs
+.vscode/
+.idea/
