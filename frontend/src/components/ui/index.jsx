@@ -1,2 +1,9 @@
-const UIComponents = () => <div>UI components placeholder</div>;
-export default UIComponents;
+// Barrel export so pages can `import { Button, Card, ... } from '@/components/ui'`
+export { default as Button } from './Button';
+export { default as Card, CardHeader, CardBody } from './Card';
+export { RiskBadge, Badge } from './Badge';
+export { default as StatCard } from './StatCard';
+export { default as RiskGauge } from './RiskGauge';
+export { default as EmptyState } from './EmptyState';
+export { default as ErrorState } from './ErrorState';
+export { Skeleton, SkeletonCard, SkeletonRow } from './Skeleton';
