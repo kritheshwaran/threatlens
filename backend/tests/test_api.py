@@ -26,6 +26,12 @@ def test_scan_post_returns_full_result():
     assert 0.0 <= body['risk_score'] <= 100.0
     assert isinstance(body['features'], dict)
     assert isinstance(body['factors'], list)
+    assert 'domain_intelligence' in body
+    assert 'dns_intelligence' in body
+    assert 'ssl_intelligence' in body
+    assert 'whois' in body['domain_intelligence']
+    assert set(body['dns_intelligence']['records'].keys()) == {'A', 'AAAA', 'MX', 'NS', 'TXT'}
+    assert 'has_ssl' in body['ssl_intelligence']
 
 
 def test_scan_post_flags_suspicious_url():
@@ -35,6 +41,14 @@ def test_scan_post_flags_suspicious_url():
     assert response.status_code == 200
     body = response.json()
     assert body['classification'] in ('suspicious', 'malicious')
+
+
+def test_scan_post_handles_ip_based_url():
+    response = client.post('/api/scan/', json={'url': 'http://192.168.5.5/login'})
+    assert response.status_code == 200
+    body = response.json()
+    assert body['domain_intelligence']['is_ip'] is True
+    assert body['domain_intelligence']['whois']['available'] is False
 
 
 def test_scan_post_rejects_empty_url():
