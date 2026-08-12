@@ -1,8 +1,8 @@
 from fastapi import APIRouter, HTTPException
 
 from ...ml.model import ModelNotTrainedError
-from ...ml.predictor import predict_url
 from ...schemas.scan import ScanRequest, ScanResponse
+from ...services.security_report import generate_security_report
 
 router = APIRouter()
 
@@ -18,7 +18,7 @@ def scan_url(payload: ScanRequest):
         raise HTTPException(status_code=422, detail="url must not be empty")
 
     try:
-        result = predict_url(payload.url)
+        result = generate_security_report(payload.url)
     except ModelNotTrainedError as exc:
         raise HTTPException(status_code=503, detail=str(exc)) from exc
 

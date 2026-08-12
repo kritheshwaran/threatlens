@@ -13,7 +13,6 @@ def test_predict_url_response_shape():
     assert set(result.keys()) == {
         'url', 'normalized_url', 'classification', 'confidence',
         'risk_score', 'model_name', 'features', 'factors',
-        'domain_intelligence', 'dns_intelligence', 'ssl_intelligence',
     }
     assert result['classification'] in ('safe', 'suspicious', 'malicious')
     assert 0.0 <= result['confidence'] <= 1.0

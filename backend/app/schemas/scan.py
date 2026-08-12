@@ -25,7 +25,7 @@ class WhoisInfo(BaseModel):
     name_servers: list[str] = []
 
 
-class DomainInfo(BaseModel):
+class DomainAnalysis(BaseModel):
     hostname: str
     registrable_domain: str
     subdomain: str
@@ -38,13 +38,13 @@ class DNSRecordResult(BaseModel):
     error: Optional[str] = None
 
 
-class DNSInfo(BaseModel):
+class DNSAnalysis(BaseModel):
     hostname: str
     records: dict[str, DNSRecordResult]
     resolved: bool
 
 
-class SSLInfo(BaseModel):
+class SSLAnalysis(BaseModel):
     has_ssl: bool
     certificate_valid: Optional[bool] = None
     is_expired: Optional[bool] = None
@@ -61,15 +61,40 @@ class SSLInfo(BaseModel):
     error: Optional[str] = None
 
 
+class UrlAnalysis(BaseModel):
+    ml_model: str
+    ml_phishing_probability: float
+    features: dict
+    factors: list[Factor]
+
+
+class ThreatIntelligence(BaseModel):
+    virus_total: dict
+    abuseipdb: dict
+    openphish: dict
+    phishtank: dict
+    sources_checked: int
+    sources_available: int
+    overall: dict
+
+
+class RiskBreakdown(BaseModel):
+    sub_scores: dict
+    weights: dict
+
+
 class ScanResponse(BaseModel):
     url: str
     normalized_url: str
-    classification: Literal["safe", "suspicious", "malicious"]
-    confidence: float
     risk_score: float
-    model_name: str
-    features: dict
-    factors: list[Factor]
-    domain_intelligence: DomainInfo
-    dns_intelligence: DNSInfo
-    ssl_intelligence: SSLInfo
+    classification: Literal["SAFE", "LOW RISK", "MEDIUM RISK", "HIGH RISK", "CRITICAL"]
+    confidence: float
+    reasons: list[str]
+    positive_signals: list[str]
+    negative_signals: list[str]
+    url_analysis: UrlAnalysis
+    domain_analysis: DomainAnalysis
+    dns_analysis: DNSAnalysis
+    ssl_analysis: SSLAnalysis
+    threat_intelligence: ThreatIntelligence
+    risk_breakdown: RiskBreakdown
