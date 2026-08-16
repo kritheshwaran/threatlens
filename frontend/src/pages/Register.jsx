@@ -1,29 +1,37 @@
 import { useState } from 'react';
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { ShieldCheck } from 'lucide-react';
 import { Card, CardBody, Button, ErrorState } from '../components/ui';
 import { useAuth } from '../context/AuthContext';
 
-export default function Login() {
-  const { login } = useAuth();
+export default function Register() {
+  const { register } = useAuth();
   const navigate = useNavigate();
-  const location = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-
-  const redirectTo = location.state?.from?.pathname || '/';
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
+
+    if (password !== confirmPassword) {
+      setError('Passwords do not match.');
+      return;
+    }
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters.');
+      return;
+    }
+
     setLoading(true);
     try {
-      await login(email, password);
-      navigate(redirectTo, { replace: true });
+      await register(email, password);
+      navigate('/', { replace: true });
     } catch (err) {
-      setError(err.message || 'Login failed. Please try again.');
+      setError(err.message || 'Registration failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -36,13 +44,13 @@ export default function Login() {
           <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-accent-soft text-accent">
             <ShieldCheck size={22} strokeWidth={2.25} />
           </span>
-          <h1 className="font-display text-xl font-semibold text-text-primary">Sign in to ThreatLens</h1>
-          <p className="text-sm text-text-secondary">Check the analyst dashboard for your scans.</p>
+          <h1 className="font-display text-xl font-semibold text-text-primary">Create your account</h1>
+          <p className="text-sm text-text-secondary">Start scanning URLs and tracking threats.</p>
         </div>
 
         <Card>
           <CardBody className="flex flex-col gap-4">
-            {error && <ErrorState title="Couldn't sign in" description={error} />}
+            {error && <ErrorState title="Couldn't create account" description={error} />}
 
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <label className="text-sm">
@@ -64,8 +72,24 @@ export default function Login() {
                 <input
                   type="password"
                   required
+                  minLength={8}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  disabled={loading}
+                  className="h-10 w-full rounded-lg border border-border bg-surface2 px-3 text-sm text-text-primary
+                    focus:border-accent focus:outline-none disabled:opacity-60"
+                  placeholder="At least 8 characters"
+                />
+              </label>
+
+              <label className="text-sm">
+                <span className="mb-1.5 block text-xs font-medium text-text-secondary">Confirm password</span>
+                <input
+                  type="password"
+                  required
+                  minLength={8}
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
                   disabled={loading}
                   className="h-10 w-full rounded-lg border border-border bg-surface2 px-3 text-sm text-text-primary
                     focus:border-accent focus:outline-none disabled:opacity-60"
@@ -74,14 +98,14 @@ export default function Login() {
               </label>
 
               <Button type="submit" disabled={loading} className="w-full">
-                {loading ? 'Signing in…' : 'Sign in'}
+                {loading ? 'Creating account…' : 'Create account'}
               </Button>
             </form>
 
             <p className="text-center text-xs text-text-secondary">
-              Don&apos;t have an account?{' '}
-              <Link to="/register" className="font-medium text-accent hover:text-accent-strong">
-                Create one
+              Already have an account?{' '}
+              <Link to="/login" className="font-medium text-accent hover:text-accent-strong">
+                Sign in
               </Link>
             </p>
           </CardBody>

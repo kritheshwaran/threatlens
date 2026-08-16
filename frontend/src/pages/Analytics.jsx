@@ -1,43 +1,80 @@
-import { Card, CardHeader, CardBody, StatCard } from '../components/ui';
+import { useEffect, useState } from 'react';
+import { Card, CardHeader, CardBody, StatCard, SkeletonCard, ErrorState } from '../components/ui';
 import { ThreatTrendChart, ThreatCategoryChart } from '../components/charts';
-import { THREAT_TREND, THREAT_CATEGORY_BREAKDOWN, DASHBOARD_SUMMARY } from '../data/mockData';
-import { Percent, TrendingDown, Timer } from 'lucide-react';
+import { fetchAnalytics } from '../services/analyticsService';
+import { Percent, TrendingUp, ShieldAlert } from 'lucide-react';
 
 export default function Analytics() {
+  const [data, setData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    fetchAnalytics()
+      .then((result) => {
+        if (!cancelled) setData(result);
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err.message || 'Failed to load analytics.');
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const detectionRate =
+    data && data.summary.totalScans > 0
+      ? Math.round((data.summary.threatsDetected / data.summary.totalScans) * 100)
+      : 0;
+
   return (
     <div className="flex flex-col gap-6">
       <div>
         <h2 className="font-display text-xl font-semibold text-text-primary">Analytics</h2>
         <p className="mt-1 text-sm text-text-secondary">
-          Aggregate trends across all scans. Mock data for Module 1.
+          Aggregate trends across all of your scans.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-        <StatCard
-          icon={Percent}
-          label="Detection rate"
-          value={`${Math.round(
-            (DASHBOARD_SUMMARY.threatsDetected / DASHBOARD_SUMMARY.totalScans) * 100
-          )}%`}
-        />
-        <StatCard icon={TrendingDown} label="Avg. response time" value="1.4s" />
-        <StatCard icon={Timer} label="Avg. scans / day" value="183" />
-      </div>
+      {error && <ErrorState title="Couldn't load analytics" description={error} />}
 
-      <Card>
-        <CardHeader title="Threat trend" subtitle="Verdict distribution over the last 8 days" />
-        <CardBody>
-          <ThreatTrendChart data={THREAT_TREND} />
-        </CardBody>
-      </Card>
+      {loading && !error && (
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+          <SkeletonCard />
+          <SkeletonCard />
+          <SkeletonCard />
+        </div>
+      )}
 
-      <Card>
-        <CardHeader title="Threat categories" subtitle="Breakdown of detected threat types" />
-        <CardBody>
-          <ThreatCategoryChart data={THREAT_CATEGORY_BREAKDOWN} />
-        </CardBody>
-      </Card>
+      {!loading && !error && data && (
+        <>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            <StatCard icon={Percent} label="Detection rate" value={`${detectionRate}%`} />
+            <StatCard icon={TrendingUp} label="Total scans" value={data.summary.totalScans} />
+            <StatCard icon={ShieldAlert} label="Threats detected" value={data.summary.threatsDetected} />
+          </div>
+
+          <Card>
+            <CardHeader title="Threat trend" subtitle="Verdict distribution over the last 8 days" />
+            <CardBody>
+              <ThreatTrendChart data={data.threatTrend} />
+            </CardBody>
+          </Card>
+
+          <Card>
+            <CardHeader title="Classification breakdown" subtitle="Scans by risk level" />
+            <CardBody>
+              <ThreatCategoryChart data={data.classificationBreakdown} />
+            </CardBody>
+          </Card>
+        </>
+      )}
     </div>
   );
 }

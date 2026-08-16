@@ -1,30 +1,71 @@
+import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Globe, Clock, ShieldQuestion } from 'lucide-react';
-import { Card, CardHeader, CardBody, RiskGauge, RiskBadge, EmptyState, Button } from '../components/ui';
+import { Card, CardHeader, CardBody, RiskGauge, RiskBadge, EmptyState, ErrorState, Button } from '../components/ui';
 import { riskMeta } from '../utils/risk';
-import { useScanHistory } from '../context/ScanHistoryContext';
+import { fetchScanDetail } from '../services/historyService';
 
 export default function Report() {
   const { id } = useParams();
-  const { history } = useScanHistory();
-  const scan = history.find((s) => s.id === id);
+  const [scan, setScan] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  if (!scan) {
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+    setScan(null);
+
+    fetchScanDetail(id)
+      .then((data) => {
+        if (!cancelled) setScan(data);
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err.message || 'Failed to load this report.');
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [id]);
+
+  if (loading) {
     return (
       <div className="flex flex-col gap-6">
         <Link to="/history" className="flex w-fit items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary">
           <ArrowLeft size={15} /> Back to history
         </Link>
-        <EmptyState
-          icon={ShieldQuestion}
-          title="Report not found"
-          description="This scan result doesn't exist or hasn't been run yet."
-          action={
-            <Link to="/scanner">
-              <Button size="sm">Run a new scan</Button>
-            </Link>
-          }
-        />
+        <Card className="flex items-center justify-center py-16">
+          <RiskGauge scanning size={140} />
+        </Card>
+      </div>
+    );
+  }
+
+  if (error || !scan) {
+    return (
+      <div className="flex flex-col gap-6">
+        <Link to="/history" className="flex w-fit items-center gap-1.5 text-sm text-text-secondary hover:text-text-primary">
+          <ArrowLeft size={15} /> Back to history
+        </Link>
+        {error ? (
+          <ErrorState title="Couldn't load this report" description={error} />
+        ) : (
+          <EmptyState
+            icon={ShieldQuestion}
+            title="Report not found"
+            description="This scan result doesn't exist or hasn't been run yet."
+            action={
+              <Link to="/scanner">
+                <Button size="sm">Run a new scan</Button>
+              </Link>
+            }
+          />
+        )}
       </div>
     );
   }
@@ -72,15 +113,6 @@ export default function Report() {
             </div>
           ))}
         </div>
-      </Card>
-
-      <Card className="border-dashed">
-        <CardBody>
-          <p className="text-xs text-text-muted">
-            This report is generated from mock data as part of Module 1 (frontend foundation).
-            Real DNS, SSL, WHOIS, and ML-based analysis will populate these signals in later modules.
-          </p>
-        </CardBody>
       </Card>
     </div>
   );

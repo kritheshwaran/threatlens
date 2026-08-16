@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, History as HistoryIcon } from 'lucide-react';
-import { Card, RiskBadge, EmptyState } from '../components/ui';
+import { Card, RiskBadge, EmptyState, ErrorState, SkeletonRow } from '../components/ui';
 import { useScanHistory } from '../context/ScanHistoryContext';
 
 const FILTERS = [
@@ -12,7 +12,7 @@ const FILTERS = [
 ];
 
 export default function History() {
-  const { history } = useScanHistory();
+  const { history, loading, error, refresh } = useScanHistory();
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState('all');
 
@@ -28,7 +28,7 @@ export default function History() {
     <div className="flex flex-col gap-6">
       <div>
         <h2 className="font-display text-xl font-semibold text-text-primary">Scan History</h2>
-        <p className="mt-1 text-sm text-text-secondary">All scans run in this session, most recent first.</p>
+        <p className="mt-1 text-sm text-text-secondary">All of your scans, most recent first.</p>
       </div>
 
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
@@ -39,8 +39,9 @@ export default function History() {
             placeholder="Filter by URL…"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
+            disabled={loading}
             className="h-9 w-full rounded-lg border border-border bg-surface2 pl-9 pr-3 text-sm text-text-primary
-              placeholder:text-text-muted focus:border-accent focus:outline-none"
+              placeholder:text-text-muted focus:border-accent focus:outline-none disabled:opacity-60"
           />
         </div>
 
@@ -50,7 +51,8 @@ export default function History() {
               key={f.value}
               type="button"
               onClick={() => setFilter(f.value)}
-              className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+              disabled={loading}
+              className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors disabled:opacity-60 ${
                 filter === f.value
                   ? 'bg-accent text-white'
                   : 'text-text-secondary hover:text-text-primary'
@@ -62,38 +64,68 @@ export default function History() {
         </div>
       </div>
 
-      <Card>
-        {filtered.length === 0 ? (
-          <div className="p-2">
-            <EmptyState
-              icon={HistoryIcon}
-              title="No matching scans"
-              description="Try a different search term or filter."
-            />
-          </div>
-        ) : (
-          <div className="divide-y divide-border">
-            <div className="hidden grid-cols-[1fr_auto_auto] gap-4 px-5 py-2.5 text-xs font-medium uppercase tracking-wide text-text-muted sm:grid">
-              <span>URL</span>
-              <span>Scanned</span>
-              <span>Verdict</span>
+      {error && (
+        <ErrorState
+          title="Couldn't load scan history"
+          description={error}
+          action={
+            <button
+              type="button"
+              onClick={refresh}
+              className="text-sm font-medium text-accent hover:text-accent-strong"
+            >
+              Try again
+            </button>
+          }
+        />
+      )}
+
+      {loading && !error && (
+        <Card>
+          <SkeletonRow />
+          <SkeletonRow />
+          <SkeletonRow />
+        </Card>
+      )}
+
+      {!loading && !error && (
+        <Card>
+          {filtered.length === 0 ? (
+            <div className="p-2">
+              <EmptyState
+                icon={HistoryIcon}
+                title={history.length === 0 ? 'No scans yet' : 'No matching scans'}
+                description={
+                  history.length === 0
+                    ? 'Run your first scan to see it appear here.'
+                    : 'Try a different search term or filter.'
+                }
+              />
             </div>
-            {filtered.map((scan) => (
-              <Link
-                key={scan.id}
-                to={`/report/${scan.id}`}
-                className="flex flex-col gap-2 px-5 py-3.5 transition-colors hover:bg-surface2 sm:grid sm:grid-cols-[1fr_auto_auto] sm:items-center sm:gap-4"
-              >
-                <span className="min-w-0 truncate font-mono text-sm text-text-primary">{scan.url}</span>
-                <span className="font-mono text-xs text-text-muted">
-                  {new Date(scan.scannedAt).toLocaleDateString()}
-                </span>
-                <RiskBadge level={scan.level} size="sm" />
-              </Link>
-            ))}
-          </div>
-        )}
-      </Card>
+          ) : (
+            <div className="divide-y divide-border">
+              <div className="hidden grid-cols-[1fr_auto_auto] gap-4 px-5 py-2.5 text-xs font-medium uppercase tracking-wide text-text-muted sm:grid">
+                <span>URL</span>
+                <span>Scanned</span>
+                <span>Verdict</span>
+              </div>
+              {filtered.map((scan) => (
+                <Link
+                  key={scan.id}
+                  to={`/report/${scan.id}`}
+                  className="flex flex-col gap-2 px-5 py-3.5 transition-colors hover:bg-surface2 sm:grid sm:grid-cols-[1fr_auto_auto] sm:items-center sm:gap-4"
+                >
+                  <span className="min-w-0 truncate font-mono text-sm text-text-primary">{scan.url}</span>
+                  <span className="font-mono text-xs text-text-muted">
+                    {new Date(scan.scannedAt).toLocaleDateString()}
+                  </span>
+                  <RiskBadge level={scan.level} size="sm" />
+                </Link>
+              ))}
+            </div>
+          )}
+        </Card>
+      )}
     </div>
   );
 }

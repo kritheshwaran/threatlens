@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Literal, Optional
 
 from pydantic import BaseModel, Field
@@ -84,11 +85,13 @@ class RiskBreakdown(BaseModel):
 
 
 class ScanResponse(BaseModel):
+    id: int
     url: str
     normalized_url: str
     risk_score: float
     classification: Literal["SAFE", "LOW RISK", "MEDIUM RISK", "HIGH RISK", "CRITICAL"]
     confidence: float
+    created_at: datetime
     reasons: list[str]
     positive_signals: list[str]
     negative_signals: list[str]
@@ -98,3 +101,15 @@ class ScanResponse(BaseModel):
     ssl_analysis: SSLAnalysis
     threat_intelligence: ThreatIntelligence
     risk_breakdown: RiskBreakdown
+
+
+class ScanHistoryItem(BaseModel):
+    id: int
+    url: str
+    normalized_url: str
+    risk_score: float
+    classification: Literal["SAFE", "LOW RISK", "MEDIUM RISK", "HIGH RISK", "CRITICAL"]
+    confidence: float
+    created_at: datetime
+
+    model_config = {"from_attributes": True}

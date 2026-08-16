@@ -1,0 +1,30 @@
+{
+  "name": "ThreatLens",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "backend",
+  "workspaceFolder": "/app/backend",
+  "shutdownAction": "stopCompose",
+
+  "forwardPorts": [8000, 3000, 5432],
+  "portsAttributes": {
+    "8000": { "label": "Backend API" },
+    "3000": { "label": "Frontend" },
+    "5432": { "label": "PostgreSQL" }
+  },
+
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": { "version": "20" }
+  },
+
+  "postCreateCommand": "pip install -r requirements.txt && cd ../frontend && npm install",
+
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-python.python",
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode"
+      ]
+    }
+  }
+}

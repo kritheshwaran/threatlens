@@ -2,14 +2,17 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import App from './App';
+import { AuthProvider } from './context/AuthContext';
 import { ScanHistoryProvider } from './context/ScanHistoryContext';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
     <BrowserRouter>
-      <ScanHistoryProvider>
-        <App />
-      </ScanHistoryProvider>
+      <AuthProvider>
+        <ScanHistoryProvider>
+          <App />
+        </ScanHistoryProvider>
+      </AuthProvider>
     </BrowserRouter>
   </React.StrictMode>
 );

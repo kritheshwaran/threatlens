@@ -1,25 +1,26 @@
-from fastapi.testclient import TestClient
-from backend.app.main import app
-
-client = TestClient(app)
+"""
+General /scan API-shape tests. Now that Module 5 requires
+authentication on /scan, these use the shared `client`/`auth_headers`
+fixtures from conftest.py instead of a bare TestClient.
+"""
 
 VALID_CLASSIFICATIONS = {"SAFE", "LOW RISK", "MEDIUM RISK", "HIGH RISK", "CRITICAL"}
 
 
-def test_root():
+def test_root(client):
     response = client.get('/')
     assert response.status_code == 200
     assert response.json()['message'] == 'ThreatLens backend is running'
 
 
-def test_scan_status_get():
+def test_scan_status_get(client):
     response = client.get('/api/scan/')
     assert response.status_code == 200
     assert response.json() == {'status': 'idle'}
 
 
-def test_scan_post_returns_full_security_report():
-    response = client.post('/api/scan/', json={'url': 'https://example.com'})
+def test_scan_post_returns_full_security_report(client, auth_headers):
+    response = client.post('/api/scan/', json={'url': 'https://example.com'}, headers=auth_headers)
     assert response.status_code == 200
     body = response.json()
 
@@ -47,36 +48,42 @@ def test_scan_post_returns_full_security_report():
     assert 'sub_scores' in body['risk_breakdown']
 
 
-def test_scan_post_flags_suspicious_url_with_higher_score():
-    safe = client.post('/api/scan/', json={'url': 'https://github.com/some/repo'}).json()
-    suspicious = client.post('/api/scan/', json={
-        'url': 'http://secure-account-verify-login.tk/billing?id=1'
-    }).json()
+def test_scan_post_flags_suspicious_url_with_higher_score(client, auth_headers):
+    safe = client.post(
+        '/api/scan/', json={'url': 'https://github.com/some/repo'}, headers=auth_headers
+    ).json()
+    suspicious = client.post(
+        '/api/scan/',
+        json={'url': 'http://secure-account-verify-login.tk/billing?id=1'},
+        headers=auth_headers,
+    ).json()
     assert suspicious['risk_score'] > safe['risk_score']
 
 
-def test_scan_post_handles_ip_based_url():
-    response = client.post('/api/scan/', json={'url': 'http://192.168.5.5/login'})
+def test_scan_post_handles_ip_based_url(client, auth_headers):
+    response = client.post('/api/scan/', json={'url': 'http://192.168.5.5/login'}, headers=auth_headers)
     assert response.status_code == 200
     body = response.json()
     assert body['domain_analysis']['is_ip'] is True
     assert body['domain_analysis']['whois']['available'] is False
 
 
-def test_scan_post_reasons_are_non_empty_for_risky_url():
-    response = client.post('/api/scan/', json={
-        'url': 'http://secure-paypal-update-billing.info/verify'
-    })
+def test_scan_post_reasons_are_non_empty_for_risky_url(client, auth_headers):
+    response = client.post(
+        '/api/scan/',
+        json={'url': 'http://secure-paypal-update-billing.info/verify'},
+        headers=auth_headers,
+    )
     body = response.json()
     assert len(body['reasons']) > 0
     assert len(body['negative_signals']) > 0
 
 
-def test_scan_post_rejects_empty_url():
-    response = client.post('/api/scan/', json={'url': ''})
+def test_scan_post_rejects_empty_url(client, auth_headers):
+    response = client.post('/api/scan/', json={'url': ''}, headers=auth_headers)
     assert response.status_code == 422
 
 
-def test_scan_post_rejects_missing_url_field():
-    response = client.post('/api/scan/', json={})
+def test_scan_post_rejects_missing_url_field(client, auth_headers):
+    response = client.post('/api/scan/', json={}, headers=auth_headers)
     assert response.status_code == 422
